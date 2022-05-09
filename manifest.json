@@ -1,0 +1,36 @@
+﻿{
+    "name":"__MSG_title__",
+    "description":"__MSG_desc__",
+    "version":"1.0",
+    "default_locale":"zh_CN",
+    "permissions":[
+        "contextMenus",
+        "tabs",
+        "http://www.imooc.com/*/",
+        "https://www.imooc.com/*/",
+        "webRequest",
+        "webRequestBlocking",
+        "storage"
+    ],
+    "icons":{
+        "16":"logo/logo16x16.png",
+        "48":"logo/logo48x48.png",
+        "128":"logo/logo128x128.png",
+        "256":"logo/logo256x256.png"
+    },
+    "background":{
+        "scripts":[
+            "js/dreamfly.js"
+        ]
+    },
+    "web_accessible_resources": [
+        "js/index.js"
+    ],
+    "content_scripts": [
+        {
+          "matches": ["https://www.imooc.com/*","http://www.imooc.com/*"],
+          "js": ["js/auto.js"]
+        }
+    ],
+    "manifest_version":2
+}
