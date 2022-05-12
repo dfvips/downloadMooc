@@ -1,13 +1,15 @@
 ﻿{
     "name":"__MSG_title__",
     "description":"__MSG_desc__",
-    "version":"1.0",
+    "version":"2.0",
     "default_locale":"zh_CN",
     "permissions":[
         "contextMenus",
         "tabs",
         "http://www.imooc.com/*/",
         "https://www.imooc.com/*/",
+        "http://coding.imooc.com/",
+        "https://coding.imooc.com/",
         "webRequest",
         "webRequestBlocking",
         "storage"
@@ -28,7 +30,7 @@
     ],
     "content_scripts": [
         {
-          "matches": ["https://www.imooc.com/*","http://www.imooc.com/*"],
+          "matches": ["https://www.imooc.com/*","http://www.imooc.com/*","https://coding.imooc.com/*","http://coding.imooc.com/*"],
           "js": ["js/auto.js"]
         }
     ],
