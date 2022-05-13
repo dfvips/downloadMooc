@@ -1,7 +1,7 @@
 ﻿{
     "name":"__MSG_title__",
     "description":"__MSG_desc__",
-    "version":"2.0",
+    "version":"2.0.1",
     "default_locale":"zh_CN",
     "permissions":[
         "contextMenus",
@@ -25,9 +25,7 @@
             "js/dreamfly.js"
         ]
     },
-    "web_accessible_resources": [
-        "js/index.js"
-    ],
+    "web_accessible_resources": ["js/index.js","js/jszip/jszip.min.js","js/jszip/FileSaver.js"],
     "content_scripts": [
         {
           "matches": ["https://www.imooc.com/*","http://www.imooc.com/*","https://coding.imooc.com/*","http://coding.imooc.com/*"],
