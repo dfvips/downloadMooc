@@ -7,6 +7,8 @@ function Onload() {
 
 function inject(){
   createScript('js/index.js');
+  createScript('js/jszip/jszip.min.js');
+  createScript('js/jszip/FileSaver.js');
 }
 function createScript(url){
   var t = document.createElement("script");

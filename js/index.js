@@ -1,109 +1,166 @@
-let cid,ti,vid,islist = false,isfree = true;
-if(typeof(course_id) != "undefined") {
-    islist = false;
-    cid = course_id;
-    ti = videoTitle;
-    vid = pageInfo.mid;
-    console.log(cid,ti,vid);
+let cid,ti,vid,ln = 0,islist = false,isfree = true,files,cname,delay = (n) => {
+    const date = Date.now()
+    let currentDate = null
+    do {
+        currentDate = Date.now()
+    } while (currentDate - date < n*1000)
+}
+  
+if(typeof(course_id) != 'undefined') {
+    islist = false
+    cid = course_id
+    ti = videoTitle
+    vid = pageInfo.mid
+    cname = courseName
+    console.log(cid,ti,vid)
 } else {
-    islist = true;
-    if(typeof(_cid) != "undefined")
+    islist = true
+    if(typeof(_cid) != 'undefined')
     {   
-        isfree = false;
-        cid = _cid;
+        isfree = false
+        cid = _cid
+        cname = _name
     }else {
-        isfree = true;
-        cid = GC.course.id
+        isfree = true
+        if(typeof GC !== 'undefined') {
+            cid = GC.course.id
+            cname = GC.course.name
+        }
     }
 }
 document.addEventListener('downOne', function (event) {
+    ln = 1
+    files = new Array()
     //单集下载
-    if(islist){ //是否列表页面
+    if(islist) { //是否列表页面
         alert ('列表页面，页面不支持单集下载')
     } else {
-        down(vid,ti,'https://www.imooc.com/course/playlist/'+vid+'?t=m3u8&cdn=aliyun');
+        down(ti,'https://www.imooc.com/course/playlist/'+vid+'?t=m3u8&cdn=aliyun',0)
     }
-});
+})
 document.addEventListener('downAll', function (event) {
+    files = new Array()
     //全集下载
 	if(!islist){//是否播放页面
-        $('.sec-li').each(function(){
+        var l = $('.sec-li').length
+        $('.sec-li').each(function(ind){
             let vid = $(this).data('id'),
-            ti = $(this).text().replace(/\n/g,'').replace(/.*?：/,'').replace(/\(.*/,'').trim();
+            ti = $(this).text().replace(/\r?\n/g,'').replace(/.*?：/,'').replace(/\(.*/,'').trim().replace(/\s{2,}.*/g,'')
             if($(this).find('a').attr('href').indexOf('code') == -1) {
-                down(vid,ti,'https://www.imooc.com/course/playlist/'+vid+'?t=m3u8&cdn=aliyun');
+                down(ti,'https://www.imooc.com/course/playlist/'+vid+'?t=m3u8&cdn=aliyun',ind)
+            } else {
+                l--
             }
         })
-        console.log($('.sec-li').length);
+        ln = l
+        console.log(l)
     } else {
-        var l = $('.J-media-item').length;
+        var l = $('.J-media-item').length
         if (isfree){//是否免费课程
-            $('.J-media-item').parent().each(function(){
+            $('.J-media-item').parent().each(function(ind){
                 let vid = $(this).data('media-id'),
-                ti = $(this).find('a').text().replace(/\n/g,'').replace(/.*?：/,'').replace(/\(.*/,'').trim();
+                ti = $(this).find('a').text().replace(/\r?\n/g,'').replace(/.*?：/,'').replace(/\(.*/,'').trim().replace(/\s{2,}.*/g,'')
                 if($(this).find('a').attr('href').indexOf('code') == -1) {
-                    down(vid,ti,'https://www.imooc.com/course/playlist/'+vid+'?t=m3u8&cdn=aliyun');
+                    down(ti,'https://www.imooc.com/course/playlist/'+vid+'?t=m3u8&cdn=aliyun',ind)
+                } else {
+                    l--
                 }
             })
-            console.log(l);
+            ln = l
+            console.log(l)
             if(l == 0) {
-                alert('请切换到“章节目录”');
+                alert('请切换到“章节目录”')
             }
         }else {
-            let l = $('.js-watchForFree').length;
-            $('.js-watchForFree').each(function(){
+            let l = $('.js-watchForFree').length
+            $('.js-watchForFree').each(function(ind){
                 let p = $(this).parent(),
                 vid = p.children('input').val(),
-                ti = p.children('span.title_info').text().replace(/\(.*?\)/,'');
-                down(vid,ti,'https://coding.imooc.com/lesson/m3u8h5?mid=' + vid + '&cid=' + cid + '&ssl=1&cdn=aliyun');
-            });
-            console.log(l);
+                ti = p.children('span.title_info').text().replace(/\r?\n/g,'').replace(/\(.*?\)/,'').replace(/\s{2,}.*/g,'')
+                down(ti,'https://coding.imooc.com/lesson/m3u8h5?mid=' + vid + '&cid=' + cid + '&ssl=1&cdn=aliyun',down)
+            })
+            ln = l
+            console.log(l)
             if(l == 0) {
-                alert('请切换到“章节目录”');
+                alert('请切换到“章节目录”')
             }
         }
     }
-});
+})
 //下载
-function down(vid,ti,url){
-    getData(url,function(data){
-		let m3 = decode(data.data.info)
+function down(ti,url,ind){
+    let m3
+    getData(url).then(data => {//请求Api
+        if(ind%20 === 0 && ind !== 0) {
+            delay(2);
+        }
+        if (typeof data !== 'object') {
+            data = JSON.parse(data)
+        }
+        m3 = decode(data.data.info)
 		u = m3.split('\n'),
-		arr = new Array();
+		arr = new Array()
 		for (let i in u) {
-			let l = u[i];
+			let l = u[i]
 			if(l.indexOf('http') != -1){
-				let mediaInfo = '{"' + u[i-1].replace(/#.*?:/g,'').replace('-','').replace(/=/g,'":').replace(/,/g,',"').replace('RESOLUTION":','RESOLUTION":"').replace(/\s+/g,'') + '"}';
-				mediaInfo = mediaInfo.toLowerCase();
-				let obj = JSON.parse(mediaInfo);
-				obj.url = l;
-				arr.push(obj);
+				let mediaInfo = '{"' + u[i-1].replace(/#.*?:/g,'').replace('-','').replace(/=/g,'":').replace(/,/g,',"').replace('RESOLUTION":','RESOLUTION":"').replace(/\s+/g,'') + '"}'
+				mediaInfo = mediaInfo.toLowerCase()
+				let obj = JSON.parse(mediaInfo)
+				obj.url = l
+				arr.push(obj)
 			}
 		}
-        arr = arr.sort((a,b) => b.bandwidth - a.bandwidth);
-		let m3u  = arr[0].url;
-        //获取m3u8
-		getData(m3u,function(data){
-			let m3 = decode(data.data.info),
-			key = m3.match('(?<=URI=").*?(?=")')[0];
-            //获取密钥
-			getData(key,function(data){
-				let key = getkey(data.data.info);
-				m3 = m3.replace(/#EXT-X-KEY.*/, "#EXT-X-KEY:METHOD=AES-128,URI=\"base64:"+key+"\"");
-				download(m3,ti);
-			});
-		})
+        arr = arr.sort((a,b) => b.bandwidth - a.bandwidth)
+		let m3u  = arr[0].url
+        return getData(m3u)
+    }).then (data => {//获取m3u8
+        m3 = decode(data.data.info),
+        key = m3.match('(?<=URI=").*?(?=")')[0]
+        return getData(key)
+    }).then (data => {//获取密钥
+        let key = getkey(data.data.info)
+        m3 = m3.replace(/#EXT-X-KEY.*/, `#EXT-X-KEY:METHOD=AES-128,URI=base64:"${key}"`)
+    }).then(() => {//下载
+        let obj = {
+            'fileName' : `${ti}.m3u8`,
+            'content' : m3
+        }
+        files.push(obj)
+    }).then(() => {
+        if (files.length === ln) {
+            if (typeof JSZip === 'undefined' || files.length === 1) {
+                files.forEach(data => {
+                    download(data.content, data.fileName)
+                });
+            }else {
+                let zip = new JSZip();
+                files.forEach(data => {
+                    zip.file(data.fileName, data.content)
+                });
+                zip.generateAsync({type:'blob'}).then(function(content) {
+                    // see FileSaver.js
+                    saveAs(content, `${cname}.zip`)
+                });
+            }
+        }
+    }).catch(err => {
+        console.log(err)
+    })  
+}
+//ajax
+function getData (url) {
+    return new Promise((resolve,reject) => {
+        $.ajax({
+            url,
+            success (data) {
+                resolve(data)
+            },
+            error(err) {
+                reject(err)
+            }
+        })
     })
-}
-//发送请求
-function getData (url,callback) {
-   let b = new XMLHttpRequest();
-   b.open("GET", url, false);
-   b.onload = function() {
-        callback(JSON.parse(b.responseText));
-   };
-   b.send(null)
-}
+ }
 //解密
 function decode(t, e) {
     function r(t, e) {
@@ -259,35 +316,35 @@ function decode(t, e) {
     for (c = 0; c < a.data.info.length; c++)
         g += String.fromCharCode(a.data.info[c]);
     return g
-};
+}
 //转码
 function getkey(key) {
-    return _arrayBufferToBase64(decode(key, 1));
-};
+    return _arrayBufferToBase64(decode(key, 1))
+}
 //arrayBuffer转base64
 function _arrayBufferToBase64(buffer) {
-    let binary = "";
-    let bytes = new Uint8Array(buffer);
+    let binary = ""
+    let bytes = new Uint8Array(buffer)
     let len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
+    for (let i = 0; i < len ; i++) {
         binary += String.fromCharCode(bytes[i])
     }
-    return btoa(binary);
+    return btoa(binary)
 }
-//下载
+//下载单个M3u8
 function download(content,title) {
-   let d = new Blob([content], {
-	type: "text/plain"
-   }),
-   url = URL.createObjectURL(d),
-   link = document.createElement('a'),
-   body = document.querySelector('body');
-   link.href = url;
-   link.download = title + '.m3u8';
-   link.target = '_blank';
-   link.style.display = 'none';
-   body.appendChild(link);
-   link.click();
-   body.removeChild(link);
-   window.URL.revokeObjectURL(link.href);
-}
+    let d = new Blob([content], {
+        type: "text/plain"
+    })
+    saveAs(d,title)
+ }
+ /**
+ * 定义休眠函数
+ * @param {number} time 休眠时间，毫秒
+ */
+let sleep = (time) => {
+    return new Promise(resolve => setTimeout(resolve({
+        success: true,
+        time: time
+    }), time));
+};
