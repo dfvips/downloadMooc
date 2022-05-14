@@ -119,7 +119,7 @@ function down(ti,url,ind){
         return getData(key)
     }).then (data => {//获取密钥
         let key = getkey(data.data.info)
-        m3 = m3.replace(/#EXT-X-KEY.*/, `#EXT-X-KEY:METHOD=AES-128,URI=base64:"${key}"`)
+        m3 = m3.replace(/#EXT-X-KEY.*/, `#EXT-X-KEY:METHOD=AES-128,URI="base64:${key}"`)
     }).then(() => {//下载
         let obj = {
             'fileName' : `${ti}.m3u8`,
